@@ -3,6 +3,7 @@ import Head from 'next/head'
 import { useEffect, useState } from 'react'
 import styles from '../styles/Home.module.css'
 import zipcodes from '../data/zip-codes.json';
+import { Alert, Box, Button, Flex, FormControl, FormLabel, Heading, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper } from '@chakra-ui/react';
 
 const Home: NextPage = () => {
   const [lowestTemp, setLowestTemp] = useState<number | null>(null);
@@ -58,9 +59,7 @@ const Home: NextPage = () => {
       }
     }
   }, [isLoading])
-
-  console.log(zipcode)
-  console.log(forcast)
+  
   return (
     <div className={styles.container}>
       <Head>
@@ -70,38 +69,67 @@ const Home: NextPage = () => {
       </Head>
 
       <main className={styles.main}>
-        <h1 className={styles.title}>
+        <Heading mb="10" as="h1" size="2xl">
           Should I Open My Windows?
-        </h1>
+        </Heading>
         {!forcastTemp ?
           <form onSubmit={(e) => formSubmit(e)}>
-            <div className='form-row'>
-              <label>Zipcode<input type="number" onChange={(e) => setzipcode(Number(e.target.value))} /></label>
-            </div>
-            <div className="form-row">
-              <label>Lowest Temperature<input onChange={(e) => setLowestTemp(Number(e.target.value))} max={highestTemp ?? undefined} type="number" /></label>
-              <label>Highest Temperature<input onChange={(e) => setHighestTemp(Number(e.target.value))} min={lowestTemp ?? undefined} type="number" /></label>
-            </div>
-            <div className="form-row">
-              <button type="submit" disabled={isLoading ? true : false}>Submit</button>
-            </div>
+            <Flex>
+              <FormControl>
+                <FormLabel>Zipcode</FormLabel>
+                <NumberInput maxW={40} onChange={(val) => setzipcode(Number(val))}>
+                  <NumberInputField />
+                </NumberInput>
+              </FormControl>
+            </Flex>
+            <Flex mt="8" gap="8">
+              <FormControl>
+                <FormLabel>Lowest Temperature</FormLabel>
+                  <NumberInput onChange={(val) => setLowestTemp(Number(val))} max={highestTemp ?? undefined}>
+                  <NumberInputField />
+                  <NumberInputStepper>
+                    <NumberIncrementStepper />
+                    <NumberDecrementStepper />
+                  </NumberInputStepper>
+                </NumberInput>
+              </FormControl>
+              <FormControl>
+                <FormLabel>Highest Temperature</FormLabel>
+                  <NumberInput onChange={(val) => setHighestTemp(Number(val))} min={lowestTemp ?? undefined} defaultValue={lowestTemp ?? undefined}>
+                  <NumberInputField />
+                  <NumberInputStepper>
+                    <NumberIncrementStepper />
+                    <NumberDecrementStepper />
+                  </NumberInputStepper>
+                </NumberInput>
+              </FormControl>
+            </Flex>
+            <Flex mt="8">
+              <Button colorScheme="pink" type="submit" isLoading={isLoading} loadingText="Submitting">Submit</Button>
+            </Flex>
             { error && 
-              <div className="form-row form-error">
-                Form Error
-              </div>
+              <Alert mt="4" status="error">
+                Invalid fields
+              </Alert>
             }
           </form>
         :
-          <div className="results">
-            {forcastTemp < lowestTemp || forcastTemp > highestTemp ?
-              <div className="result result-no">No</div>
-            :
-              <div className="result result-yes">Yes</div>
-            }
-            <div className="results-reset">
-              <button onClick={formReset} type="button">Reset</button>
-            </div>
-          </div>
+          <Flex direction="column" align="center" gap="6">
+            <Box>
+              {forcastTemp < lowestTemp || forcastTemp > highestTemp ?
+                <Alert status="warning">
+                  <Heading as="h2" size="lg">Not Today</Heading>
+                </Alert>
+              :
+                <Alert status="success">
+                  <Heading as="h2" size="lg">Open Your Windows</Heading>
+                </Alert>
+              }
+            </Box>
+            <Box>
+              <Button colorScheme="gray" onClick={formReset}>Reset</Button>
+            </Box>
+          </Flex>
         }
       </main>
     </div>
